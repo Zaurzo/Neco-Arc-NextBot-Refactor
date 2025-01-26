@@ -2,6 +2,8 @@ if not DrGBase then return end
 
 AddCSLuaFile()
 
+game.AddParticles("particles/sevv_linux_curse_stuff.pcf")
+
 ENT.Base = "drgbase_nextbot"
 ENT.PrintName = "Neco Arc"
 
