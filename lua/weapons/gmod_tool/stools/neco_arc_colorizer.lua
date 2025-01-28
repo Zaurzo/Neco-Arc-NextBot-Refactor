@@ -1,11 +1,10 @@
-
-TOOL.Category = "Neco Arc"
-TOOL.Name = "#tool.neco_arc_colorizer.name"
+TOOL.Category = 'Neco Arc'
+TOOL.Name = '#tool.neco_arc_colorizer.name'
 
 TOOL.Information = {
-	{ name = "left" },
-	{ name = "right" },
-	{ name = "reload" }
+	{ name = 'left' },
+	{ name = 'right' },
+	{ name = 'reload' }
 }
 
 TOOL.DefaultColors = {
@@ -20,15 +19,15 @@ TOOL.DefaultColors = {
     Skin = Color(240, 215 ,192),
 }
 
-for name, color in pairs(TOOL.DefaultColors) do
+local defaultColors = TOOL.DefaultColors
+
+for name, color in pairs(defaultColors) do
     name = name:lower()
 
     TOOL.ClientConVar[name .. '_r'] = color.r
     TOOL.ClientConVar[name .. '_g'] = color.g
     TOOL.ClientConVar[name .. '_b'] = color.b
 end
-
-local defaultColors = TOOL.DefaultColors
 
 if CLIENT then
     language.Add('tool.neco_arc_colorizer.name', 'Colorizer')
@@ -105,6 +104,96 @@ function TOOL.BuildCPanel(panel)
 	panel:Help('#tool.neco_arc_colorizer.desc')
 	panel:ToolPresets('neco_arc_colorizer', defaultConVars)
 
+    local randomizeButton = panel:Button('Randomize')
+
+    function randomizeButton:DoClick()
+        for name, color in pairs(defaultColors) do
+            local conVarName = 'neco_arc_colorizer_' .. name:lower()
+            local r, g, b = math.random(255), math.random(255), math.random(255)
+
+            RunConsoleCommand(conVarName .. '_r', r)
+            RunConsoleCommand(conVarName .. '_g', g)
+            RunConsoleCommand(conVarName .. '_b', b)
+        end
+    end
+
+    local resetButton = panel:Button('Reset')
+
+    function resetButton:DoClick()
+        for name, color in pairs(defaultColors) do
+            local conVarName = 'neco_arc_colorizer_' .. name:lower()
+
+            RunConsoleCommand(conVarName .. '_r', color.r)
+            RunConsoleCommand(conVarName .. '_g', color.g)
+            RunConsoleCommand(conVarName .. '_b', color.b)
+        end
+    end
+
+    local modelPreview = vgui.Create("DModelPanel", modelPreviewBG)
+
+    modelPreview:SetModel("models/zaurzo_dughoo/necoarc_animated/necoarc1.mdl")
+    modelPreview:SetSize(200, 225)
+    modelPreview:SetCamPos(Vector(20, 150, 20))
+    modelPreview:SetLookAt(Vector(0, 0, 20))
+    modelPreview:SetFOV(20)
+    modelPreview:SetMouseInputEnabled(true)
+
+    local Paint = modelPreview.Paint
+
+    function modelPreview:Paint(w, h)
+        surface.SetDrawColor(0, 0, 0, 150)
+        surface.DrawRect(0, 0, w, h)
+
+        Paint(self, w, h)
+    end
+
+    local ent = modelPreview:GetEntity()
+    local ang = Angle(0, 80, 0)
+
+    ent:SetSequence(17)
+
+    local isHolding = false
+    local lastMouseX = 0
+
+    function ent:RenderOverride()
+        render.SuppressEngineLighting(true)
+
+        self:DrawModel()
+
+        render.SuppressEngineLighting(false)
+    end
+
+    function modelPreview:LayoutEntity(ent)
+        if isHolding then
+            if not self:IsHovered() then
+                isHolding = false
+            end
+
+            local x = gui.MouseX()
+
+            ang.y = ang.y + (x - lastMouseX) 
+
+            lastMouseX = x
+        end
+
+        ent:SetAngles(ang)
+    end
+
+    function modelPreview:OnMousePressed(code)
+        if code ~= MOUSE_LEFT then return end
+
+        isHolding = true
+        lastMouseX = gui.MouseX()
+    end
+
+    function modelPreview:OnMouseReleased(code)
+        if isHolding and code == MOUSE_LEFT then
+            isHolding = false
+        end
+    end
+
+    panel:AddItem(modelPreview)
+
     for name, color in pairs(defaultColors) do
         local conVarName = 'neco_arc_colorizer_' .. name:lower()
 
@@ -112,7 +201,21 @@ function TOOL.BuildCPanel(panel)
         local mixer = picker.Mixer
 
         mixer:SetAlphaBar(false)
+        mixer:UpdateDefaultColor()
+
         picker:SetTall(200)
+
+        local prevModelColor = mixer:GetColor():ToVector()
+
+        ent['Get' .. name .. 'Color'] = function()
+            return prevModelColor
+        end
+
+        function mixer:ValueChanged(col)
+            local r, g, b = col.r / 255, col.g / 255, col.b / 255
+
+            prevModelColor = Vector(r, g, b)
+        end
 
         local colorPreview = vgui.Create('DPanel', panel)
 

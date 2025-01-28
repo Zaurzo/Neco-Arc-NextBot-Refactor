@@ -49,19 +49,19 @@ ENT.OnDamageSounds = {"Neco-Arc/pain1.wav", "Neco-Arc/pain2.wav", "Neco-Arc/pain
 local function createColorProxy(name)
     local funcName = 'Get' .. name .. 'Color'
 
+    name = 'Neco' .. name .. 'Color'
+
 	ENT[funcName] = function(self)
         return self:GetNWVector(name, false) or nil
     end
 
 	if SERVER then return end
 
-    name = 'Neco' .. name .. 'Color'
-
     local proxy = {
         name = name, 
 
         init = function(self, _, values)
-            local r, g, b = string.match(values.default, "(%d+) (%d+) (%d+)")
+            local r, g, b = string.match(values.default, '(%d+) (%d+) (%d+)')
 
             self.default = Color(r, g, b):ToVector()
             self.result = values.resultvar
@@ -92,3 +92,6 @@ createColorProxy('Hair')
 createColorProxy('Ears')
 
 DrGBase.AddNextbot(ENT)
+
+
+if SERVER then return end
