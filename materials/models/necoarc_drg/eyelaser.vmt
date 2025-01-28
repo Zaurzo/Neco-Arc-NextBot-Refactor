@@ -1,0 +1,28 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/necoarc_drg/eyelaser"
+	"$bumpmap" "models/necoarc_drg/NecoBump"
+	$PhongAlbedoTint 1
+"$lightwarptexture"				"models/linux55_kf2/other/lightwarp_flesh2"
+
+	 $model "1"
+	"$halflambert" "1"
+	$diffuseexp 1.5
+	"$phong" "1"
+	$phongboost 0.4
+	$phongexponent 155
+	$phongtint "[.85 .85 1]"
+	$phongfresnelranges "[.6 .4 0.1]"
+	$ambientocclusion 1
+
+
+	"$rimlight" "1"												
+"$rimlightexponent" "33"										
+	"$rimlightboost" "1"										
+	$rimmask 1
+
+"$phongexponenttexture" 	"models/linux55_kf2/other/exp"
+	"$selfillummask" 			"models/necoarc_drg/eyes"
+	"$selfillum" 				"1"
+	"$selfillumtint" 			"[5 5 5]"
+}
