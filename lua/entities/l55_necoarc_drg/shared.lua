@@ -13,7 +13,7 @@ ENT.Category = "Melty Blood"
 ENT.ModelScale = 1
 
 ENT.BloodColor = BLOOD_COLOR_RED
-ENT.CollisionBounds = Vector(10, 12, 100)
+ENT.CollisionBounds = Vector(10, 12, 40)
 
 ENT.IdleAnimation = "neco_idle"
 ENT.RunAnimation = "neco_run"

@@ -109,11 +109,13 @@ local defaultConVars = TOOL:BuildConVarList()
 
 function TOOL.BuildCPanel(panel)
 	panel:Help('Presets:')
-	panel:ToolPresets('neco_arc_colorizer', defaultConVars)
-
-    local randomizeButton = panel:Button('Randomize')
+	
+    local presets = panel:ToolPresets('neco_arc_colorizer', defaultConVars)
+    local randomizeButton = panel:Button('Randomize All')
 
     function randomizeButton:DoClick()
+        presets.DropDown:SetText('')
+
         for name, color in pairs(defaultColors) do
             local conVarName = 'neco_arc_colorizer_' .. name:lower()
             local r, g, b = math.random(255), math.random(255), math.random(255)
@@ -124,9 +126,11 @@ function TOOL.BuildCPanel(panel)
         end
     end
 
-    local resetButton = panel:Button('Reset')
+    local resetButton = panel:Button('Reset All')
 
     function resetButton:DoClick()
+        presets.DropDown:SetText('Default')
+
         for name, color in pairs(defaultColors) do
             local conVarName = 'neco_arc_colorizer_' .. name:lower()
 
@@ -144,14 +148,21 @@ function TOOL.BuildCPanel(panel)
 
     panel:AddItem(checkBox)
 
+    panel:Help('\nModel Preview:')
+
     local modelPreview = vgui.Create("DModelPanel", modelPreviewBG)
+    local camPos = Vector(20, 150, 20)
 
     modelPreview:SetModel("models/zaurzo_dughoo/necoarc_animated/necoarc1.mdl")
     modelPreview:SetSize(200, 225)
-    modelPreview:SetCamPos(Vector(20, 150, 20))
+    modelPreview:SetCamPos(camPos)
     modelPreview:SetLookAt(Vector(0, 0, 20))
     modelPreview:SetFOV(20)
     modelPreview:SetMouseInputEnabled(true)
+
+    function modelPreview:Think()
+        camPos.y = self:GetWide() / 1.8
+    end
 
     local Paint = modelPreview.Paint
 
@@ -258,6 +269,14 @@ function TOOL.BuildCPanel(panel)
             RunConsoleCommand(conVarName .. '_r', r)
             RunConsoleCommand(conVarName .. '_g', g)
             RunConsoleCommand(conVarName .. '_b', b)
+        end
+
+        local resetButton = panel:Button('Reset')
+
+        function resetButton:DoClick()
+            RunConsoleCommand(conVarName .. '_r', color.r)
+            RunConsoleCommand(conVarName .. '_g', color.g)
+            RunConsoleCommand(conVarName .. '_b', color.b)
         end
     end
 end
