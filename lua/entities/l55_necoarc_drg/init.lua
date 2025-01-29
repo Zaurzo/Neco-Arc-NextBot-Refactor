@@ -1,12 +1,5 @@
 if not DrGBase then return end
 
-local spawnWithPreset = CreateConVar(
-    'sv_neco_arc_preset_spawn', 
-    '0', 
-    FCVAR_ARCHIVE + FCVAR_REPLICATED + FCVAR_USERINFO,
-    'Determines whether or not Neco Arc NextBots spawn with a random preset created with the Neco Arc Colorizer tool.'
-)
-
 include('shared.lua')
 AddCSLuaFile('cl_init.lua')
 
@@ -217,62 +210,6 @@ ENT.SpecialAttacks = {
 		self:ThrowRedRings(false)
 	end
 }
-
-function ENT:CustomInitialize()
-	if spawnWithPreset:GetBool() then
-		local host
-
-		for k, ply in ipairs(player.GetHumans()) do
-			if ply:IsListenServerHost() then
-				host = ply
-
-				break
-			end
-		end
-
-		if host then
-			net.Start('dhzz_neco_arc_request_preset')
-			net.WriteEntity(self)
-			net.Send(host)
-		end
-	end
-
-	self.IdleAnimation = "neco_idle"
-	self.RunAnimation = "neco_run"
-	self.WalkAnimation = "neco_walk"
-	self.JumpAnimation = "neco_jump"
-
-	self.RunSpeed = 301
-	self.WalkSpeed = 100
-
-	self:SetHealthRegen(300)
-	self:SetDefaultRelationship(D_HT)
-
-	self:SequenceEvent("neco_dodge1", 2 / 10, self.Step)
-	self:SequenceEvent("neco_dodge2", 2 / 10, self.Step)
-	self:SequenceEvent("neco_dodge3", 2 / 10, self.Step)
-	self:SequenceEvent("neco_dodge4", 2 / 10, self.Step)
-	self:SequenceEvent("neco_slam", 1.4 / 10, self.Attack3)
-	self:SequenceEvent("neco_walk", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_walk", 5.11 / 10, self.Step)
-	self:SequenceEvent("neco_run", 2 / 10, self.Step)
-	self:SequenceEvent("neco_run", 5.4 / 10, self.Step)
-	self:SequenceEvent("neco_attack1", 3.4 / 10, self.Attack1)
-	self:SequenceEvent("neco_attack2", 3.4 / 10, self.Attack2)
-	self:SequenceEvent("neco_attack3", 3.4 / 10, self.Attack1)
-	self:SequenceEvent("neco_attack3", 5.4 / 10, self.Attack1)
-	self:SequenceEvent("neco_kick", 1.4 / 10, self.Attack2)
-	self:SequenceEvent("neco_drill", 1 / 4, self.Attack1)
-	self:SequenceEvent("neco_drill", 2 / 4, self.Attack2)
-	self:SequenceEvent("neco_drill", 3 / 4, self.Attack1)
-	self:SequenceEvent("neco_drill", 4 / 4, self.Attack1)
-	self:SequenceEvent("neco_attack1", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_attack1", 5.11 / 10, self.Step)
-	self:SequenceEvent("neco_attack2", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_attack2", 5.11 / 10, self.Step)
-	self:SequenceEvent("neco_attack3", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_attack3", 5.11 / 10, self.Step)
-end
 
 function ENT:UseSpecialAttack(attackID, ignoreCooldown)
 	local specialAttacks = self.SpecialAttacks
@@ -711,10 +648,8 @@ hook.Add('PlayerDeath', 'neco_arc_dance_on_kill', NecoArcDanceOnKill)
 
 -- Apply random preset
 net.Receive('dhzz_neco_arc_request_preset', function(len, ply)
-	if not ply:IsListenServerHost() then return end
-
 	local necoArc = net.ReadEntity()
-	if not necoArc:IsValid() then return end
+	if not necoArc:IsValid() or necoArc:GetCreator() ~= ply then return end
 
 	local list = util.JSONToTable(net.ReadString())
 

@@ -92,10 +92,10 @@ end
 if SERVER then return end
 
 CreateConVar(
-    'sv_neco_arc_preset_spawn', 
+    'dhzz_neco_arc_preset_spawn', 
     '0', 
-    FCVAR_ARCHIVE + FCVAR_REPLICATED + FCVAR_USERINFO,
-    'Determines whether or not Neco Arc NextBots spawn with a random preset created with the Neco Arc Colorizer tool.'
+    FCVAR_ARCHIVE,
+    "Determines whether or not Neco Arc's you spawn will have a random preset you created with the Neco Arc Colorizer tool."
 )
 
 language.Add('tool.neco_arc_colorizer.name', 'Colorizer')
@@ -108,7 +108,7 @@ language.Add('tool.neco_arc_colorizer.reload', 'Reset colors back to default')
 local defaultConVars = TOOL:BuildConVarList()
 
 function TOOL.BuildCPanel(panel)
-	panel:Help('#tool.neco_arc_colorizer.desc')
+	panel:Help('Presets:')
 	panel:ToolPresets('neco_arc_colorizer', defaultConVars)
 
     local randomizeButton = panel:Button('Randomize')
@@ -136,14 +136,13 @@ function TOOL.BuildCPanel(panel)
         end
     end
 
-    if LocalPlayer():IsListenServerHost() then
-        local checkbox = vgui.Create('DCheckBoxLabel', panel)
+    local checkBox = vgui.Create('DCheckBoxLabel', panel)
 
-        checkbox:SetConVar('sv_neco_arc_preset_spawn')
-        checkbox:SetText("Spawn with random color preset")
+    checkBox:SetConVar('dhzz_neco_arc_preset_spawn')
+    checkBox:SetText("Spawn with random color preset")
+    checkBox:SetTooltip("Neco Arc's that you spawn will have a random color preset you have added.")
 
-        panel:AddItem(checkbox)
-    end
+    panel:AddItem(checkBox)
 
     local modelPreview = vgui.Create("DModelPanel", modelPreviewBG)
 

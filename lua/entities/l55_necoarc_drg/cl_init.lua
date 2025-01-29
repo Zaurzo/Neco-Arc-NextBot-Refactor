@@ -1,5 +1,7 @@
 include('shared.lua')
 
+local defaultPreset = {}
+
 local defaultColors = {
     Eyes = Color(255, 255, 255),
     Shirt = Color(255, 255, 255),
@@ -12,24 +14,27 @@ local defaultColors = {
     Skin = Color(240, 215 ,192)
 }
 
-net.Receive('dhzz_neco_arc_request_preset', function()
-    local necoArc = net.ReadEntity()
-    if not necoArc:IsValid() then return end
+local spawnWithPreset = CreateConVar(
+    'dhzz_neco_arc_preset_spawn', 
+    '0', 
+    FCVAR_ARCHIVE,
+    "Determines whether or not Neco Arc's you spawn will have a random preset you created with the Neco Arc Colorizer tool."
+)
+
+for name, color in pairs(defaultColors) do
+    local presetKeyName = 'neco_arc_colorizer_' .. name:lower()
+
+    defaultPreset[presetKeyName .. '_r'] = color.r
+    defaultPreset[presetKeyName .. '_g'] = color.g
+    defaultPreset[presetKeyName .. '_b'] = color.b
+end
+
+function ENT:OnPresetRequest()
+    if not spawnWithPreset:GetBool() then return end
 
     local group = table.Copy(presets.GetTable('neco_arc_colorizer'))
 
-    -- Add default preset
-    local defaultGroup = {}
-
-    for name, color in pairs(defaultColors) do
-        local presetKeyName = 'neco_arc_colorizer_' .. name:lower()
-
-        defaultGroup[presetKeyName .. '_r'] = color.r
-        defaultGroup[presetKeyName .. '_g'] = color.g
-        defaultGroup[presetKeyName .. '_b'] = color.b
-    end
-
-    group.Default = defaultGroup
+    group.Default = defaultPreset
 
     local preset = table.Random(group)
     local list = {}
@@ -45,7 +50,7 @@ net.Receive('dhzz_neco_arc_request_preset', function()
     end 
 
     net.Start('dhzz_neco_arc_request_preset')
-    net.WriteEntity(necoArc)
+    net.WriteEntity(self)
     net.WriteString(util.TableToJSON(list))
     net.SendToServer()
-end)
+end
