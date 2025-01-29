@@ -129,7 +129,8 @@ ENT.SpecialAttacks = {
 		if self:GetCooldown("EyeLaserCooldown") == 0 then
 			self:SetCooldown("EyeLaserCooldown", 7.21)
 			self:EmitSound("Neco-Arc/neco30.wav", 400)
-			self:SetSkin(1)
+			self:SetSubMaterial(7, 'models/necoarc_drg/eyelaser')
+			self:SetSubMaterial(8, 'models/necoarc_drg/eyelaser')
 			
 			timer.Create("EyeAttack", 0, 28, function()
 				ParticleEffectAttach("SEVV_FREES_LINUX_BEAM1", PATTACH_POINT_FOLLOW, self, 3)
@@ -138,7 +139,8 @@ ENT.SpecialAttacks = {
 			end)
 
 			self:PlaySequenceAndMove("neco_eyes", 1, self.FaceEnemy)
-			self:SetSkin(0)
+			self:SetSubMaterial(7, 'models/necoarc_drg/necoeyes')
+			self:SetSubMaterial(8, 'models/necoarc_drg/necopupils')
 
 			timer.Remove("EyeAttack")
 		end
@@ -406,12 +408,14 @@ function ENT:PhoneAttack()
 	self:PlayVOX()
 	self:PlaySequenceAndMove("neco_phone", 1, self.PossessionFaceForward)
 	
-	enemy:TakeDamage(5815, self, self)
-	enemy:EmitSound("Neco-Arc/neco33.wav", 500)
+	if enemy:IsValid() then
+		enemy:TakeDamage(5815, self, self)
+		enemy:EmitSound("Neco-Arc/neco33.wav", 500)
+
+		ParticleEffect("SEVV_FREES_LINUX_GODBEAM", enemy:GetPos(), self:GetAngles())
+	end
 
 	phone:Remove()
-
-	ParticleEffect("SEVV_FREES_LINUX_GODBEAM", enemy:GetPos(), self:GetAngles())
 end
 
 function ENT:ThrowRedRings(isPossessed)
@@ -548,19 +552,54 @@ function ENT:OnRangeAttack(enemy)
 	self:Dodge(enemy)
 end
 
-function ENT:Dancel()
-	self:CallInCoroutineOverride(function(self, delay)
-		self:EmitSound("Neco-Arc/nya.wav")
-		self:PlaySequenceAndMoveOverride("neco_dance", {
-			overrider = true,
-			overridable = false
-		}, {
-			rate = 1,
-			gravity = true,
-			collisions = false
-		})
+function ENT:Dance()
+	local sound = self._DanceSound
 
-		self:Timer(1, function() end)
+	if sound then
+		sound:Stop()
+		sound:Play()
+	else
+		sound = CreateSound(self, 'Neco-Arc/nya.wav')
+		sound:Play()
+
+		self._DanceSound = sound
+	end
+
+	self:CallInCoroutineInstant(function(self, delay)
+		self:PlaySequenceAndMove("neco_dance", nil, function()
+			if not self._StopDance then return end 
+
+			self._StopDance = nil
+
+			return true
+		end)
+	end)
+end
+
+function ENT:StopDance()
+	local sound = self._DanceSound
+
+	if sound then
+		sound:Stop()
+
+		self._DanceSound = nil
+	end
+
+	self._StopDance = true
+end
+
+function ENT:OnTakeDamage(dmg)
+	self:SpotEntity(dmg:GetAttacker())
+	self:StopDance()
+end
+
+function ENT:CallInCoroutineInstant(callback)
+	local oldThread = self.BehaveThread
+
+	self.BehaveThread = coroutine.create(function()
+		callback(self)
+
+		self.BehaveThread = oldThread
 	end)
 end
 
@@ -597,3 +636,35 @@ function ENT:OnRemove()
 	timer.Remove("EyeAttack")
 	timer.Remove("BreathAttack")
 end
+
+local function getNecoArc(attacker, inflictor)
+	if inflictor:IsValid() and inflictor:GetClass() == 'l55_necoarc_drg' then
+		return inflictor
+	end
+
+	if attacker:IsValid() and attacker:GetClass() == 'l55_necoarc_drg' then
+		return attacker
+	end
+
+	return false
+end
+
+hook.Add('OnNPCKilled', 'neco_arc_dance_on_kill', function(_, attacker, inflictor)
+	if math.random(4) ~= 1 then return end
+
+	local neco = getNecoArc(attacker, inflictor)
+
+	if neco then
+		neco:Dance()
+	end
+end)
+
+hook.Add('PlayerDeath', 'neco_arc_dance_on_kill', function(_, inflictor, attacker)
+	if math.random(4) ~= 1 then return end
+
+	local neco = getNecoArc(attacker, inflictor)
+
+	if neco then
+		neco:Dance()
+	end
+end)

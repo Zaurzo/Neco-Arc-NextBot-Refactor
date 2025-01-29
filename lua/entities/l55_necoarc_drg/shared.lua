@@ -92,6 +92,3 @@ createColorProxy('Hair')
 createColorProxy('Ears')
 
 DrGBase.AddNextbot(ENT)
-
-
-if SERVER then return end

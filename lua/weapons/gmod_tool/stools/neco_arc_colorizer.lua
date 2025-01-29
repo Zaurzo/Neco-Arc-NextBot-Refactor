@@ -212,9 +212,11 @@ function TOOL.BuildCPanel(panel)
         end
 
         function mixer:ValueChanged(col)
-            local r, g, b = col.r / 255, col.g / 255, col.b / 255
+            local r = col.r / 255
+            local g = col.g / 255
+            local b = col.b / 255
 
-            prevModelColor = Vector(r, g, b)
+            prevModelColor:SetUnpacked(r, g, b)
         end
 
         local colorPreview = vgui.Create('DPanel', panel)
@@ -231,6 +233,16 @@ function TOOL.BuildCPanel(panel)
 
             surface.SetDrawColor(0, 0, 0)
             surface.DrawOutlinedRect(0, 0, w, h, 1)
+        end
+
+        local randomizeButton = panel:Button('Randomize')
+
+        function randomizeButton:DoClick()
+            local r, g, b = math.random(255), math.random(255), math.random(255)
+
+            RunConsoleCommand(conVarName .. '_r', r)
+            RunConsoleCommand(conVarName .. '_g', g)
+            RunConsoleCommand(conVarName .. '_b', b)
         end
     end
 end
