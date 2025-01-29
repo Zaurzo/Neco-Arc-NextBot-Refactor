@@ -15,6 +15,14 @@ ENT.ModelScale = 1
 ENT.BloodColor = BLOOD_COLOR_RED
 ENT.CollisionBounds = Vector(10, 12, 100)
 
+ENT.IdleAnimation = "neco_idle"
+ENT.RunAnimation = "neco_run"
+ENT.WalkAnimation = "neco_walk"
+ENT.JumpAnimation = "neco_jump"
+
+ENT.RunSpeed = 301
+ENT.WalkSpeed = 100
+
 ENT.SpawnHealth = 150000
 ENT.RunAnimRate = 2
 ENT.WalkAnimRate = 1
@@ -46,50 +54,6 @@ ENT.PossessionViews = {
 
 ENT.OnIdleSounds = {"Neco-Arc/idle1.wav", "Neco-Arc/idle2.wav", "Neco-Arc/idle3.wav", "Neco-Arc/idle4.wav", "Neco-Arc/idle5.wav", "Neco-Arc/idle6.wav"}
 ENT.OnDamageSounds = {"Neco-Arc/pain1.wav", "Neco-Arc/pain2.wav", "Neco-Arc/pain3.wav", "Neco-Arc/pain4.wav"}
-
-function ENT:CustomInitialize()
-	self.IdleAnimation = "neco_idle"
-	self.RunAnimation = "neco_run"
-	self.WalkAnimation = "neco_walk"
-	self.JumpAnimation = "neco_jump"
-
-	self.RunSpeed = 301
-	self.WalkSpeed = 100
-
-    if SERVER then
-	    self:SetHealthRegen(300)
-        self:SetDefaultRelationship(D_HT)
-    end
-
-	self:SequenceEvent("neco_dodge1", 2 / 10, self.Step)
-	self:SequenceEvent("neco_dodge2", 2 / 10, self.Step)
-	self:SequenceEvent("neco_dodge3", 2 / 10, self.Step)
-	self:SequenceEvent("neco_dodge4", 2 / 10, self.Step)
-	self:SequenceEvent("neco_slam", 1.4 / 10, self.Attack3)
-	self:SequenceEvent("neco_walk", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_walk", 5.11 / 10, self.Step)
-	self:SequenceEvent("neco_run", 2 / 10, self.Step)
-	self:SequenceEvent("neco_run", 5.4 / 10, self.Step)
-	self:SequenceEvent("neco_attack1", 3.4 / 10, self.Attack1)
-	self:SequenceEvent("neco_attack2", 3.4 / 10, self.Attack2)
-	self:SequenceEvent("neco_attack3", 3.4 / 10, self.Attack1)
-	self:SequenceEvent("neco_attack3", 5.4 / 10, self.Attack1)
-	self:SequenceEvent("neco_kick", 1.4 / 10, self.Attack2)
-	self:SequenceEvent("neco_drill", 1 / 4, self.Attack1)
-	self:SequenceEvent("neco_drill", 2 / 4, self.Attack2)
-	self:SequenceEvent("neco_drill", 3 / 4, self.Attack1)
-	self:SequenceEvent("neco_drill", 4 / 4, self.Attack1)
-	self:SequenceEvent("neco_attack1", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_attack1", 5.11 / 10, self.Step)
-	self:SequenceEvent("neco_attack2", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_attack2", 5.11 / 10, self.Step)
-	self:SequenceEvent("neco_attack3", 2.3 / 10, self.Step)
-	self:SequenceEvent("neco_attack3", 5.11 / 10, self.Step)
-
-	if CLIENT then
-		self:OnPresetRequest()
-	end
-end
 
 local function createColorProxy(name)
     local funcName = 'Get' .. name .. 'Color'

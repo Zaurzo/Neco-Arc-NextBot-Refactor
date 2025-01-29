@@ -211,6 +211,36 @@ ENT.SpecialAttacks = {
 	end
 }
 
+function ENT:CustomInitialize()
+	self:SetHealthRegen(300)
+	self:SetDefaultRelationship(D_HT)
+
+	self:SequenceEvent("neco_dodge1", 2 / 10, self.Step)
+	self:SequenceEvent("neco_dodge2", 2 / 10, self.Step)
+	self:SequenceEvent("neco_dodge3", 2 / 10, self.Step)
+	self:SequenceEvent("neco_dodge4", 2 / 10, self.Step)
+	self:SequenceEvent("neco_slam", 1.4 / 10, self.Attack3)
+	self:SequenceEvent("neco_walk", 2.3 / 10, self.Step)
+	self:SequenceEvent("neco_walk", 5.11 / 10, self.Step)
+	self:SequenceEvent("neco_run", 2 / 10, self.Step)
+	self:SequenceEvent("neco_run", 5.4 / 10, self.Step)
+	self:SequenceEvent("neco_attack1", 3.4 / 10, self.Attack1)
+	self:SequenceEvent("neco_attack2", 3.4 / 10, self.Attack2)
+	self:SequenceEvent("neco_attack3", 3.4 / 10, self.Attack1)
+	self:SequenceEvent("neco_attack3", 5.4 / 10, self.Attack1)
+	self:SequenceEvent("neco_kick", 1.4 / 10, self.Attack2)
+	self:SequenceEvent("neco_drill", 1 / 4, self.Attack1)
+	self:SequenceEvent("neco_drill", 2 / 4, self.Attack2)
+	self:SequenceEvent("neco_drill", 3 / 4, self.Attack1)
+	self:SequenceEvent("neco_drill", 4 / 4, self.Attack1)
+	self:SequenceEvent("neco_attack1", 2.3 / 10, self.Step)
+	self:SequenceEvent("neco_attack1", 5.11 / 10, self.Step)
+	self:SequenceEvent("neco_attack2", 2.3 / 10, self.Step)
+	self:SequenceEvent("neco_attack2", 5.11 / 10, self.Step)
+	self:SequenceEvent("neco_attack3", 2.3 / 10, self.Step)
+	self:SequenceEvent("neco_attack3", 5.11 / 10, self.Step)
+end
+
 function ENT:UseSpecialAttack(attackID, ignoreCooldown)
 	local specialAttacks = self.SpecialAttacks
 

@@ -29,7 +29,7 @@ for name, color in pairs(defaultColors) do
     defaultPreset[presetKeyName .. '_b'] = color.b
 end
 
-function ENT:OnPresetRequest()
+function ENT:CustomInitialize()
     if not spawnWithPreset:GetBool() then return end
 
     local group = table.Copy(presets.GetTable('neco_arc_colorizer'))
