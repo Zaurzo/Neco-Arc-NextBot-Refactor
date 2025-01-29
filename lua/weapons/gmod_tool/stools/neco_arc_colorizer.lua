@@ -29,15 +29,6 @@ for name, color in pairs(defaultColors) do
     TOOL.ClientConVar[name .. '_b'] = color.b
 end
 
-if CLIENT then
-    language.Add('tool.neco_arc_colorizer.name', 'Colorizer')
-    language.Add('tool.neco_arc_colorizer.desc', 'Neco Arc NextBot: Colorize separate parts')
-
-    language.Add('tool.neco_arc_colorizer.left', 'Apply colors')
-    language.Add('tool.neco_arc_colorizer.right', 'Copy colors')
-    language.Add('tool.neco_arc_colorizer.reload', 'Reset colors back to default')
-end
-
 function TOOL:LeftClick(tr)
     local ent = tr.Entity
 
@@ -98,6 +89,22 @@ function TOOL:Reload(tr)
 	return true
 end
 
+if SERVER then return end
+
+CreateConVar(
+    'sv_neco_arc_preset_spawn', 
+    '0', 
+    FCVAR_ARCHIVE + FCVAR_REPLICATED + FCVAR_USERINFO,
+    'Determines whether or not Neco Arc NextBots spawn with a random preset created with the Neco Arc Colorizer tool.'
+)
+
+language.Add('tool.neco_arc_colorizer.name', 'Colorizer')
+language.Add('tool.neco_arc_colorizer.desc', 'Neco Arc NextBot: Colorize separate parts')
+
+language.Add('tool.neco_arc_colorizer.left', 'Apply colors')
+language.Add('tool.neco_arc_colorizer.right', 'Copy colors')
+language.Add('tool.neco_arc_colorizer.reload', 'Reset colors back to default')
+
 local defaultConVars = TOOL:BuildConVarList()
 
 function TOOL.BuildCPanel(panel)
@@ -127,6 +134,15 @@ function TOOL.BuildCPanel(panel)
             RunConsoleCommand(conVarName .. '_g', color.g)
             RunConsoleCommand(conVarName .. '_b', color.b)
         end
+    end
+
+    if LocalPlayer():IsListenServerHost() then
+        local checkbox = vgui.Create('DCheckBoxLabel', panel)
+
+        checkbox:SetConVar('sv_neco_arc_preset_spawn')
+        checkbox:SetText("Spawn with random color preset")
+
+        panel:AddItem(checkbox)
     end
 
     local modelPreview = vgui.Create("DModelPanel", modelPreviewBG)

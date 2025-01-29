@@ -1,6 +1,16 @@
 if not DrGBase then return end
 
+local spawnWithPreset = CreateConVar(
+    'sv_neco_arc_preset_spawn', 
+    '0', 
+    FCVAR_ARCHIVE + FCVAR_REPLICATED + FCVAR_USERINFO,
+    'Determines whether or not Neco Arc NextBots spawn with a random preset created with the Neco Arc Colorizer tool.'
+)
+
 include('shared.lua')
+AddCSLuaFile('cl_init.lua')
+
+util.AddNetworkString('dhzz_neco_arc_request_preset')
 
 ENT.PhoneDelayTime = CurTime()
 
@@ -209,6 +219,24 @@ ENT.SpecialAttacks = {
 }
 
 function ENT:CustomInitialize()
+	if spawnWithPreset:GetBool() then
+		local host
+
+		for k, ply in ipairs(player.GetHumans()) do
+			if ply:IsListenServerHost() then
+				host = ply
+
+				break
+			end
+		end
+
+		if host then
+			net.Start('dhzz_neco_arc_request_preset')
+			net.WriteEntity(self)
+			net.Send(host)
+		end
+	end
+
 	self.IdleAnimation = "neco_idle"
 	self.RunAnimation = "neco_run"
 	self.WalkAnimation = "neco_walk"
@@ -680,3 +708,19 @@ end
 
 hook.Add('OnNPCKilled', 'neco_arc_dance_on_kill', NecoArcDanceOnKill)
 hook.Add('PlayerDeath', 'neco_arc_dance_on_kill', NecoArcDanceOnKill)
+
+-- Apply random preset
+net.Receive('dhzz_neco_arc_request_preset', function(len, ply)
+	if not ply:IsListenServerHost() then return end
+
+	local necoArc = net.ReadEntity()
+	if not necoArc:IsValid() then return end
+
+	local list = util.JSONToTable(net.ReadString())
+
+	for name, vecColor in pairs(list) do
+		local niceName = 'Neco' .. name[1] .. name:sub(2) .. 'Color'
+
+		necoArc:SetNWVector(niceName, vecColor)
+	end
+end)
