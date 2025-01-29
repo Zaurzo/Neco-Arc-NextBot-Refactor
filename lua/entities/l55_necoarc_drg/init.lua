@@ -419,7 +419,7 @@ function ENT:PhoneAttack()
 end
 
 function ENT:ThrowRedRings(isPossessed)
-	if self:GetCooldown("RedRingDelay") > 0 then return end
+	if self:GetCooldown("RedRingCooldown") > 0 then return end
 
 	local proj = self:CreateProjectile("ncarc_ring_l55")
 	if not proj:IsValid() then return end
@@ -449,7 +449,7 @@ function ENT:ThrowRedRings(isPossessed)
 		proj.CustomThink = function() end
 	end
 
-	self:SetCooldown("RedRingDelay", 2)
+	self:SetCooldown("RedRingCooldown", 2)
 	self:SetVelocity(self:GetForward() * 40 + self:GetUp() * 950)
 
 	self:EmitSound("Neco-Arc/neco58.wav")
@@ -603,16 +603,6 @@ function ENT:CallInCoroutineInstant(callback)
 	end)
 end
 
---[[function ENT:OnOtherKilled(ent, dmg)
-	if self:IsPossessed() then return end
-	if not self:GetCooldown("Lmao") then return end
-	if self:GetCooldown("Lmao") == 0 then
-		self:SetCooldown("Lmao", 19)
-		local attacker = dmg:GetAttacker()
-		if IsValid(attacker) and attacker == self then self:Dancel() end
-	end
-end]]
-
 function ENT:JumpAttack()
 	if not self:IsOnGround() then return end
 
@@ -637,34 +627,25 @@ function ENT:OnRemove()
 	timer.Remove("BreathAttack")
 end
 
-local function getNecoArc(attacker, inflictor)
+local function NecoArcDanceOnKill(_, attacker, inflictor)
+	if math.random(4) ~= 1 then return end
+
+	local necoArc 
+
 	if inflictor:IsValid() and inflictor:GetClass() == 'l55_necoarc_drg' then
-		return inflictor
+		necoArc = inflictor
+	elseif attacker:IsValid() and attacker:GetClass() == 'l55_necoarc_drg' then
+		necoArc = attacker
 	end
 
-	if attacker:IsValid() and attacker:GetClass() == 'l55_necoarc_drg' then
-		return attacker
-	end
+	if not necoArc or necoArc:IsPossessed() then return end
 
-	return false
+	local cooldown = necoArc:GetCooldown('DanceCooldown')
+	if not cooldown or cooldown ~= 0 then return end
+
+	necoArc:SetCooldown('DanceCooldown', 20)
+	necoArc:Dance()
 end
 
-hook.Add('OnNPCKilled', 'neco_arc_dance_on_kill', function(_, attacker, inflictor)
-	if math.random(4) ~= 1 then return end
-
-	local neco = getNecoArc(attacker, inflictor)
-
-	if neco then
-		neco:Dance()
-	end
-end)
-
-hook.Add('PlayerDeath', 'neco_arc_dance_on_kill', function(_, inflictor, attacker)
-	if math.random(4) ~= 1 then return end
-
-	local neco = getNecoArc(attacker, inflictor)
-
-	if neco then
-		neco:Dance()
-	end
-end)
+hook.Add('OnNPCKilled', 'neco_arc_dance_on_kill', NecoArcDanceOnKill)
+hook.Add('PlayerDeath', 'neco_arc_dance_on_kill', NecoArcDanceOnKill)
