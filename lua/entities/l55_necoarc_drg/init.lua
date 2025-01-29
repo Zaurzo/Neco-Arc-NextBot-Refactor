@@ -9,6 +9,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onkeydown = function(self) 
+				if self:IsDancing() then return end
+
 				self:ThrowRedRings(true) 
 			end
 		}
@@ -17,6 +19,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onkeydown = function(self)
+				if self:IsDancing() then return end
+
 				local ply = self:GetPossessor()
 
 				if ply:KeyDown(IN_BACK) then
@@ -35,6 +39,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onbuttondown = function(self, ply)
+				if self:IsDancing() then return end
+
 				self:UseSpecialAttack(5, true) -- Eye laser attack
 			end
 		}
@@ -43,6 +49,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onbuttondown = function(self, ply)
+				if self:IsDancing() then return end
+
 				self:UseSpecialAttack(4, true) -- Breath attack
 			end
 		}
@@ -51,6 +59,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onbuttondown = function(self, ply)
+				if self:IsDancing() then return end
+
 				self:UseSpecialAttack(5, true) -- Summon attack
 			end
 		}
@@ -59,6 +69,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onbuttondown = function(self, ply)
+				if self:IsDancing() then return end
+
 				self:UseSpecialAttack(1, true) -- Phone attack
 			end
 		}
@@ -67,8 +79,9 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onbuttondown = function(self, ply)
-				self:EmitSound("Neco-Arc/nya.wav")
-				self:PlaySequenceAndMove("neco_dance", 1, self.PossessionFaceForward)
+				if self:IsOnGround() then
+					self:Dance()
+				end
 			end
 		}
 	},
@@ -76,7 +89,7 @@ ENT.PossessionBinds = {
 		{
 			coroutine = false,
 			onkeydown = function(self)
-				if not self:IsOnGround() then return end
+				if not self:IsOnGround() or self:IsDancing() then return end
 
 				self:Jump(170, 1, self.PossessionFaceForward)
 				self:SetVelocity(self:GetForward() * 700 + self:GetUp() * 550)
@@ -87,6 +100,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onkeydown = function(self) 
+				if not self:IsOnGround() or self:IsDancing() then return end
+
 				self:BurrowTo(self:PossessorTrace().HitPos) 
 			end
 		}
@@ -95,6 +110,8 @@ ENT.PossessionBinds = {
 		{
 			coroutine = true,
 			onkeydown = function(self)
+				if self:IsDancing() then return end
+
 				self:AttackSky(true)
 
 				if not self:IsOnGround() then return end
@@ -232,9 +249,7 @@ end
 function ENT:UseSpecialAttack(attackID, ignoreCooldown)
 	local specialAttacks = self.SpecialAttacks
 
-	if not attackID then
-		attackID = math.random(1, #specialAttacks)
-	end
+	attackID = attackID or math.random(1, #specialAttacks)
 
 	local attack = specialAttacks[attackID]
 	if not attack then return end
@@ -283,21 +298,6 @@ function ENT:BurrowTo(pos)
 	self:Jump(300)
 end
 
-function ENT:Attack1()
-	self:PlayVOX()
-
-	self:Attack({
-		damage = 500,
-		viewpunch = Angle(4060, 4060, 4060),
-		type = DMG_BLAST,
-		range = 100,
-		force = Vector(1000600, 660, 900600)
-	}, function(_, hit)
-		self:PushEntity(hit, Vector(460, 260, 70))
-		if #hit > 0 then self:EmitSound("npc/fast_zombie/claw_strike" .. math.random(1, 3) .. ".wav") end
-	end)
-end
-
 function ENT:EyeDamage()
 	self:Attack({
 		damage = 918,
@@ -309,6 +309,7 @@ function ENT:EyeDamage()
 		viewpunch = Angle(30, math.random(-16, 20), 0),
 	}, function(_, hit)
 		self:PushEntity(hit, Vector(80, 90, 4))
+
 		if #hit > 0 then
 			self:EmitSound("npc/fast_zombie/claw_strike" .. math.random(1, 3) .. ".wav")
 		end
@@ -326,11 +327,13 @@ function ENT:BreathDamage()
 		viewpunch = Angle(30, math.random(-16, 20), 0),
 	}, function(_, hit)
 		self:PushEntity(hit, Vector(80, 90, 4))
+
 		if #hit > 0 then
 			local enemy = self:GetClosestEnemy()
 			
 			if IsValid(enemy) then
 				self:EmitSound("npc/fast_zombie/claw_strike" .. math.random(1, 3) .. ".wav")
+
 				enemy:Ignite(20, 10)
 			end
 		end
@@ -344,6 +347,21 @@ function ENT:PlayVOX()
 		self:SetCooldown("VOX1", 1)
 		self:EmitSound("Neco-Arc/attack" .. math.random(1, 19) .. ".wav")
 	end
+end
+
+function ENT:Attack1()
+	self:PlayVOX()
+
+	self:Attack({
+		damage = 500,
+		viewpunch = Angle(4060, 4060, 4060),
+		type = DMG_BLAST,
+		range = 100,
+		force = Vector(1000600, 660, 900600)
+	}, function(_, hit)
+		self:PushEntity(hit, Vector(460, 260, 70))
+		if #hit > 0 then self:EmitSound("npc/fast_zombie/claw_strike" .. math.random(1, 3) .. ".wav") end
+	end)
 end
 
 function ENT:Attack2()
@@ -573,6 +591,13 @@ function ENT:Dance()
 
 			return true
 		end)
+
+		local sound = self._DanceSound
+		if not sound then return end
+
+		sound:Stop()
+
+		self._DanceSound = nil
 	end)
 end
 
@@ -586,6 +611,12 @@ function ENT:StopDance()
 	end
 
 	self._StopDance = true
+end
+
+function ENT:IsDancing()
+	local sound = self._DanceSound
+
+	return sound and sound:IsPlaying()
 end
 
 function ENT:OnTakeDamage(dmg)

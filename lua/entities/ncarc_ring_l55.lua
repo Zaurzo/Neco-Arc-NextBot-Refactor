@@ -10,6 +10,7 @@ ENT.Category = "DrGBase"
 ENT.AdminOnly = false
 ENT.Spawnable = false
 ENT.Models = {"models/props_phx/ww2bomb.mdl"}
+
 -- Physics --
 ENT.Gravity = false
 ENT.Physgun = false
