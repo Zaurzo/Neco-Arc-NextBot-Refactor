@@ -523,6 +523,7 @@ function ENT:SummonClones(dmg, delay, hitgroup)
 		clone:SetAngles(self:GetAngles())
 		clone:Spawn()
 		clone:SetCollisionGroup(COLLISION_GROUP_WORLD)
+		clone:SetCooldown("CloneAttack", 7.23)
 
 		if hasCreator then 
 			creator:DrG_AddUndo(clone, "NPC", "Undone Neco Arc (Clone)") 
@@ -679,7 +680,9 @@ hook.Add('PlayerDeath', 'neco_arc_dance_on_kill', NecoArcDanceOnKill)
 -- Apply random preset
 net.Receive('dhzz_neco_arc_request_preset', function(len, ply)
 	local necoArc = net.ReadEntity()
+
 	if not necoArc:IsValid() or necoArc:GetCreator() ~= ply then return end
+	if necoArc:GetClass() ~= 'l55_necoarc_drg' then return end
 
 	local list = util.JSONToTable(net.ReadString())
 
